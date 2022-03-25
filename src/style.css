@@ -50,6 +50,7 @@ body
 .discord{
     border-radius: 3px;
     padding: 2px 4px;
+    transition: all 0.2s ease-in-out;
 }
 .discord:hover{
     background-color: #7289DA;
@@ -58,6 +59,7 @@ body
 .twitter{
     border-radius: 3px;
     padding: 2px 5px;
+    transition: all 0.2s ease;
 }
 .twitter:hover{
     background-color: #1DA1F2;
@@ -88,3 +90,99 @@ body
     z-index: -9999;
     background-color: #0a0e11;
 }
+
+/* glitch svg */
+.svgWrap {
+    position: relative;
+    width: 300px;
+    height: 300px;
+  }
+  
+  .svgWrap__text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    fill: #fff;
+    background: #000;
+    width:300px;
+    height: 300px;
+  }
+  .svgWrap__text:nth-child(2), .svgWrap__text:nth-child(3) {
+    clip: rect(0, 0, 0, 0);
+  }
+  .svgWrap__text:nth-child(2) {
+    fill: #fffafa;
+    left: -3px;
+    animation: svg-glitch-effect 10s infinite linear alternate-reverse;
+  }
+  .svgWrap__text:nth-child(3) {
+    fill: #f5f5f5;
+    left: 3px;
+    animation: svg-glitch-effect 11s infinite linear alternate-reverse;
+  }
+  
+  @keyframes svg-glitch-effect {
+    0% {
+      clip: rect(65px, 300px, 31px, 0);
+    }
+    5% {
+      clip: rect(64px, 300px, 37px, 0);
+    }
+    10% {
+      clip: rect(133px, 300px, 250px, 0);
+    }
+    15% {
+      clip: rect(157px, 300px, 145px, 0);
+    }
+    20% {
+      clip: rect(230px, 300px, 99px, 0);
+    }
+    25% {
+      clip: rect(288px, 300px, 287px, 0);
+    }
+    30% {
+      clip: rect(84px, 300px, 72px, 0);
+    }
+    35% {
+      clip: rect(199px, 300px, 154px, 0);
+    }
+    40% {
+      clip: rect(213px, 300px, 132px, 0);
+    }
+    45% {
+      clip: rect(34px, 300px, 71px, 0);
+    }
+    50% {
+      clip: rect(12px, 300px, 6px, 0);
+    }
+    55% {
+      clip: rect(60px, 300px, 286px, 0);
+    }
+    60% {
+      clip: rect(130px, 300px, 84px, 0);
+    }
+    65% {
+      clip: rect(177px, 300px, 123px, 0);
+    }
+    70% {
+      clip: rect(25px, 300px, 33px, 0);
+    }
+    75% {
+      clip: rect(8px, 300px, 7px, 0);
+    }
+    80% {
+      clip: rect(298px, 300px, 189px, 0);
+    }
+    85% {
+      clip: rect(201px, 300px, 112px, 0);
+    }
+    90% {
+      clip: rect(54px, 300px, 213px, 0);
+    }
+    95% {
+      clip: rect(166px, 300px, 280px, 0);
+    }
+    100% {
+      clip: rect(145px, 300px, 276px, 0);
+    }
+  }
