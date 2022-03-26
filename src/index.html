@@ -17,10 +17,7 @@
 <body>
     <section class="welcomnePage">
         <nav class="navbar">
-            <audio src="./audio/Anarchists_3.1.wav"></audio>
-            <button data-playing="false" role="switch" aria-checked="false">
-                <span>Play/Pause</span>
-            </button>
+            <audio-player></audio-player>
             <ul class="nav-list">
                 <li class="list-item">Roadmap</li>
                 <li class="list-item">Factions</li>
@@ -56,35 +53,160 @@
         </div>
     </section>
     <canvas class="webgl"></canvas>
-    <script>
-        // Set the date we're counting down to
-        var countDownDate = new Date("Jan 5, 2024 15:37:25").getTime();
-        
-        // Update the count down every 1 second
-        var x = setInterval(function() {
-        
-          // Get today's date and time
-          var now = new Date().getTime();
-        
-          // Find the distance between now and the count down date
-          var distance = countDownDate - now;
-        
-          // Time calculations for days, hours, minutes and seconds
-          var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-          // Display the result in the element with id="demo"
-          document.getElementById("countdown").innerHTML = days + "d " + hours + "h "
-          + minutes + "m " + seconds + "s ";
-        
-          // If the count down is finished, write some text
-          if (distance < 0) {
-            clearInterval(x);
-            document.getElementById("countdown").innerHTML = "EXPIRED";
-          }
-        }, 1000);
-    </script>
+ 
 </body>
 </html>
+<!-- audio player -->
+<script>
+    class AudioPlayer extends HTMLElement{
+        playing = false
+        duration = 0
+        currentTime = 0
+        volume = 0.4
+        constructor(){
+            super();
+            this.attachShadow({mode: 'open'})
+            this.render()
+            this.initializeAudio()
+            this.attachEvents()
+        }
+        initializeAudio(){
+            this.audioCtx = new AudioContext()
+            this.track = this.audioCtx.createMediaElementSource(this.audio)
+            this.gainNode = this.audioCtx.createGain()
+            this.analyzerNode = this.audioCtx.createAnalyser({fftSize:2048})
+
+            this.bufferLength = this.analyzerNode.frequencyBinCount
+            this.dataArray = new Uint8Array(this.bufferLength)
+            this.analyzerNode.getByteFrequencyData(this.dataArray)
+
+            this.track
+            .connect(this.gainNode)
+            .connect(this.analyzerNode)
+            .connect(this.audioCtx.destination)
+            
+        }
+        
+        updateFrequency(){
+            if(!this.playing) return;
+            
+            this.analyzerNode.getByteFrequencyData(this.dataArray)
+            this.canvasCtx.clearRect(0,0,this.canvas.width, this.canvas.height)
+            this.canvasCtx.fillStyle = 'rgb(0,0,0,0)';
+            this.canvasCtx.fillRect(0,0,this.canvas.width, this.canvas.height)
+
+            const barWidth = 3;
+            const gap = 2;
+            const barCount = this.bufferLength/((barWidth + gap)-gap);
+            let x = 0;
+
+            for(let i=0; i<barCount; i++){
+                // 255 = 100%
+                // this.dataArray[i] = x 
+                // then solve for x
+                const perc = (this.dataArray[i]*100)/255
+                const h = (perc * this.canvas.height)/100;
+                this.canvasCtx.fillStyle = 'rgb(255,0,0,1)';
+                this.canvasCtx.fillRect(x,this.canvas.height - h,barWidth, 10)
+                x+= barWidth + gap
+            }
+
+            console.log('--udate freuq')
+            requestAnimationFrame(this.updateFrequency.bind(this))
+        }
+
+        attachEvents(){
+            this.playPauseBtn.addEventListener('click', this.togglePlay.bind(this))
+            this.volumeBar.addEventListener('input', this.changeVolume.bind(this))
+
+            this.progressBar.addEventListener('input',()=>{
+                this.seekTo(this.progressBar.value);
+            })
+
+            this.audio.addEventListener('loadedmetadata', ()=>{
+                this.duration = this.audio.duration
+                this.progressBar.max = this.duration
+
+                const secs = `${parseInt(`${this.duration%60}`,10)}`.padStart(2,'0')
+                const mins = parseInt(`${(this.duration/60)%60}`,10)
+
+                this.durationEl.textContent = `${mins}: ${secs}`
+
+                console.log('duration', this.audio.duration)
+                console.log('currentTime', this.audio.currentTime)
+            })
+        
+            this.audio.addEventListener('timeupdate', ()=>{
+                this.updateAudioTime(this.audio.currentTime)
+            })
+
+            this.audio.addEventListener('ended', ()=>{
+                this.playing = false
+                this.playPauseBtn.textContent = 'play'
+            })
+
+        }
+        async togglePlay(){
+            if(this.audioCtx.state ==="suspended"){
+                await this.audioCtx.resume();
+            }
+            if (this.playing){
+                await this.audio.pause()
+                this.playing = false
+                this.playPauseBtn.textContent = 'play'
+            }else{
+                await this.audio.play()
+                this.playing = true
+                this.playPauseBtn.textContent = 'pause'
+                this.updateFrequency();
+            }
+        }
+        
+        seekTo(value){
+            this.audio.currentTime = value
+        }
+
+        updateAudioTime(time){
+            this.currentTime = time;
+            this.progressBar.value = this.currentTime;
+
+            const secs = `${parseInt(`${time%60}`,10)}`.padStart(2,'0')
+            const mins = parseInt(`${(time/60)%60}`,10)
+
+            this.currentTimeEl.textContent = `${mins}: ${secs}`
+        }
+
+        changeVolume(){
+            this.volume = this.volumeBar.value;
+            this.gainNode.gain.value = this.volume;
+        }
+        render(){
+            this.shadowRoot.innerHTML= `
+            <audio src="/audio/Anarchists_3.1.wav" style='display:none'></audio>
+            <button class='play-btn' type='button'>play</button>
+            <canvas class="canvasMusic" style="width:200px;height:20px"></canvas> 
+            <div class='progress-indicator'>
+                <span class="current-time">0:00</span>
+                <input type="range" max="100" value="0" class="progress-bar"></input>
+                <span class="duration">0:00</span>
+            </div>
+            <div class = "volume-bar">
+                <input type="range" min="0" max="2" step="0.01" value="${this.volume}" class="volume-field"></input>
+            </div>
+            `
+
+            this.audio = this.shadowRoot.querySelector('audio')
+            this.canvas = this.shadowRoot.querySelector('.canvasMusic')
+            this.playPauseBtn = this.shadowRoot.querySelector('.play-btn')
+            this.volumeBar = this.shadowRoot.querySelector('.volume-field')
+
+            this.progressIndicator = this.shadowRoot.querySelector('.progress-indicator')
+            this.currentTimeEl = this.progressIndicator.children[0]
+            this.progressBar = this.progressIndicator.children[1]
+            this.durationEl = this.progressIndicator.children[2]
+
+            this.canvasCtx = this.canvas.getContext('2d')
+        }
+    }
+    customElements.define('audio-player', AudioPlayer)
+</script>

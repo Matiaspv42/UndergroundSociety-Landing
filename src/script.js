@@ -29,7 +29,45 @@ function fractionate(val, minVal, maxVal) {
     return (val - minVal) / (maxVal - minVal);
 }
 
+let countDownRunning = false
+function countdown(){
+    // Set the date we're counting down to
+ var countDownDate = new Date("Jan 5, 2024 15:37:25").getTime();
+        
+ // Update the count down every 1 second
+ var x = setInterval(function() {
+ 
+   // Get today's date and time
+   var now = new Date().getTime();
+ 
+   // Find the distance between now and the count down date
+   var distance = countDownDate - now;
+ 
+   // Time calculations for days, hours, minutes and seconds
+   var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+   var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+   var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+   var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+ 
+   // Display the result in the element with id="demo"
+   document.getElementById("countdown").innerHTML = days + "d " + hours + "h "
+   + minutes + "m " + seconds + "s ";
+    
+   countDownRunning = true
+   // If the count down is finished, write some text
+   if (distance < 0) {
+     clearInterval(x);
+     document.getElementById("countdown").innerHTML = "EXPIRED";
+   }
+ }, 1000);
 
+}
+
+
+
+
+// Countdown
+ countdown()
 /**
  * Base
  */
@@ -133,44 +171,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 const clock = new THREE.Clock()
 let lastElapsedTime = 0
 
-/**
- * Audio
- */
- const audioContext = new AudioContext();
- // get the audio element
- const audioElement = document.querySelector('audio');
- // pass it into the audio context
- const track = audioContext.createMediaElementSource(audioElement);
 
- // Create analyser
-var analyser = audioContext.createAnalyser();
-track.connect(analyser)
-analyser.connect(audioContext.destination)
-analyser.fftSize = 1024;
-const bufferLength = analyser.frequencyBinCount
-
-var dataArray = new Float32Array(bufferLength);
-analyser.getFloatFrequencyData(dataArray)
-
-
-// select our play button
-const playButton = document.querySelector('button');
-playButton.addEventListener('click', function() {
-    // check if context is in suspended state (autoplay policy)
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
-    }
-    // play or pause track depending on state
-    if (this.dataset.playing === 'false') {
-        audioElement.play();
-        this.dataset.playing = 'true';
-    } else if (this.dataset.playing === 'true') {
-        audioElement.pause();
-        this.dataset.playing = 'false';
-    }
-}, false);
-
-var interp =0.0
+ 
 
 const tick = () =>
 {
@@ -182,38 +184,6 @@ const tick = () =>
     // update uTime
     planeMaterial.uniforms.uTime.value = elapsedTime
 
-    // // audio
-    // if (playButton.dataset.playing === 'true') {
-    //     interp+=0.001
-    //     analyser.getFloatFrequencyData(dataArray)
-    //     var lowerHalfArray = dataArray.slice(0, (dataArray.length / 2) - 1);
-    //     var upperHalfArray = dataArray.slice((dataArray.length / 2) - 1, dataArray.length - 1);
-
-    //     var overallAvg = avg(dataArray);
-    //     var lowerMax = max(lowerHalfArray);
-    //     var lowerAvg = avg(lowerHalfArray);
-    //     var upperMax = max(upperHalfArray);
-    //     var upperAvg = avg(upperHalfArray);
-
-        
-
-    //     var lowerMaxFr = lowerMax / lowerHalfArray.length;
-    //     var lowerAvgFr = lowerAvg / lowerHalfArray.length;
-    //     var upperMaxFr = upperMax / upperHalfArray.length;
-    //     var upperAvgFr = upperAvg / upperHalfArray.length;
-
-
-    //     var scalingRate = Math.tanh(lowerAvgFr) * 4 + 1;
-    //     plane.scale.set(1+(scalingRate*0.05),1+(scalingRate*0.05));
-
-    //     const count = planeGeometry.attributes.position.count
-    //     const randoms = new Float32Array(count)
-    //     randoms.fill(modulate(upperAvgFr, 0, 1, 0, 4)*0.5)
-    //     const randoms2 = new Float32Array(count)
-    //     randoms2.fill(lowerMaxFr)
-    //     planeGeometry.setAttribute('aBass', new THREE.BufferAttribute(randoms2,1))
-    //     planeGeometry.setAttribute('aTreble', new THREE.BufferAttribute(randoms,1))
-    // }
 
     // Update controls
     // controls.update()
@@ -224,6 +194,7 @@ const tick = () =>
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
+    
 }
 
 tick()
