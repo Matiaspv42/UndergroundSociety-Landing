@@ -172,6 +172,27 @@ const clock = new THREE.Clock()
 let lastElapsedTime = 0
 
 
+// mobile thing
+const mainMenu = document.querySelector('.menu');
+const closeMenu = document.querySelector('.closeMenu');
+const openMenu = document.querySelector('.openMenu');
+
+
+
+
+openMenu.addEventListener('click',show);
+closeMenu.addEventListener('click',close);
+
+function show(){
+    mainMenu.style.display = 'flex';
+    mainMenu.style.opacity = '0.8';
+    console.log('showing')
+}
+function close(){
+    mainMenu.style.opacity = '0';
+    openMenu.style.zIndex = '3';
+    console.log('closng')
+}
  
 
 const tick = () =>
