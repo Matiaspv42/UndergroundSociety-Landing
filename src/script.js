@@ -99,7 +99,7 @@ window.addEventListener('resize', () =>
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    effectComposer.setSize(sizes.width, sizes.height)
+    // effectComposer.setSize(sizes.width, sizes.height)
 })
 
 /**

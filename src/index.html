@@ -17,7 +17,7 @@
 <body>
     <section class="welcomnePage">
         <nav class="navbar">
-            <audio-player></audio-player>
+            <audio-player src="/audio/Anarchists_3.1.wav" title="Anarchist-Song"></audio-player>
             <ul class="nav-list">
                 <li class="list-item">Roadmap</li>
                 <li class="list-item">Factions</li>
@@ -63,6 +63,8 @@
         duration = 0
         currentTime = 0
         volume = 0.4
+        initialized = false;
+        title = 'untitled'
         constructor(){
             super();
             this.attachShadow({mode: 'open'})
@@ -70,7 +72,41 @@
             this.initializeAudio()
             this.attachEvents()
         }
+        
+        static get observedAttributes(){
+            return ['src', 'title', 'muted', 'crossorigin', 'loop', 'preload'];
+        }
+        async attributeChangedCallback(name, oldValue, newValue){
+            if(name === 'src'){
+                if(this.playing){
+                    await this.togglePlay()
+                }
+                this.initialized = false
+                this.render()
+            }else if(name ==='title'){
+                this.title = newValue;
+
+                if(this.titleElement){
+                    this.titleElement.textContent = this.title;
+                }
+            }
+            for(let i = 0; i<this.attributes.length; i++){
+                const attr = this.attributes[i]
+                if(attr.specified && attr.name !== 'title'){
+                    this.audio.setAttribute(attr.name, attr.value);
+                }
+            }
+
+            if(!this.initialized){
+                this.initializeAudio()
+            }
+        }
         initializeAudio(){
+            if(this.initialized) return;
+
+            this.initialized = true
+            this.volumeBar.value = 0.4
+
             this.audioCtx = new AudioContext()
             this.track = this.audioCtx.createMediaElementSource(this.audio)
             this.gainNode = this.audioCtx.createGain()
@@ -83,7 +119,10 @@
             this.track
             .connect(this.gainNode)
             .connect(this.analyzerNode)
-            .connect(this.audioCtx.destination)
+            .connect(this.audioCtx.destination);
+
+            this.changeVolume();
+            this.attachEvents();
             
         }
         
@@ -106,12 +145,10 @@
                 // then solve for x
                 const perc = (this.dataArray[i]*100)/255
                 const h = (perc * this.canvas.height)/100;
-                this.canvasCtx.fillStyle = 'rgb(255,0,0,1)';
-                this.canvasCtx.fillRect(x,this.canvas.height - h,barWidth, 10)
+                this.canvasCtx.fillStyle = `rgb(${this.dataArray[i]},0,0,1)`;
+                this.canvasCtx.fillRect(x,this.canvas.height - h,barWidth, h)
                 x+= barWidth + gap
             }
-
-            console.log('--udate freuq')
             requestAnimationFrame(this.updateFrequency.bind(this))
         }
 
@@ -132,8 +169,7 @@
 
                 this.durationEl.textContent = `${mins}: ${secs}`
 
-                console.log('duration', this.audio.duration)
-                console.log('currentTime', this.audio.currentTime)
+
             })
         
             this.audio.addEventListener('timeupdate', ()=>{
@@ -154,10 +190,12 @@
                 await this.audio.pause()
                 this.playing = false
                 this.playPauseBtn.textContent = 'play'
+                this.playPauseBtn.classList.remove('playing')
             }else{
                 await this.audio.play()
                 this.playing = true
                 this.playPauseBtn.textContent = 'pause'
+                this.playPauseBtn.classList.add('playing')
                 this.updateFrequency();
             }
         }
@@ -178,26 +216,225 @@
 
         changeVolume(){
             this.volume = this.volumeBar.value;
-            this.gainNode.gain.value = this.volume;
+            if(Number(this.volume)>1){
+                this.volumeBar.parentNode.className = 'volume-bar over'
+            }else if(Number(this.volume)>0){
+                this.volumeBar.parentNode.className = 'volume-bar half'
+            }else{
+                this.volumeBar.parentNode.className = 'volume-bar'
+            }
+
+            if (this.gainNode) {
+                this.gainNode.gain.value = this.volume;
+            }
         }
+        style() {
+      return `
+      <style>
+        :host {
+          width: 100%;
+          max-width: 400px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        
+        .audio-player {
+          background: #0A0E11;
+          border-radius: 5px;
+          border: 1px #EDEDED inset;
+          padding: 5px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          margin: 0 0 25px;
+        }
+        
+        .audio-name {
+            position: absolute;
+            padding: 5px 10px;
+            border: 1px #EDEDED inset;
+            width: 100%;
+            left: 0;
+            z-index: 2;
+            text-transform: capitalize;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            font-weight: 400;
+            top: calc(100% + 2px);
+
+            margin: 0;
+            border-radius: 3px;
+        }
+        
+        .play-btn,
+        .volume-bar{
+            width:30px;
+            min-width:30px;
+            height:30px;
+        }
+        .play-btn {
+            background:url('/img/audio-player-icon-sprite.png') 0 center/500% 100% no-repeat;
+            appearance:none;
+            border:none;
+            text-indent:-9999999px;
+            overflow:hidden;
+        }
+        
+        .play-btn.playing {
+            background:url('/img/audio-player-icon-sprite.png') 25% center/500% 100% no-repeat;
+        }
+        
+        .volume-bar {
+            background: url('/img/audio-player-icon-sprite.png') 50% center/500% 100% no-repeat;
+            position:relative;
+        }
+        
+        .volume-bar.half {
+            background: url('/img/audio-player-icon-sprite.png') 75% center/500% 100% no-repeat;
+        }
+        .volume-bar.over {
+            background: url('/img/audio-player-icon-sprite.png') 100% center/500% 100% no-repeat;
+        }
+        
+        .volume-field {
+            display: none;
+            position: absolute;
+            appearance: none;
+            height: 20px;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%) rotate(180deg);
+            z-index: 5;
+            margin: 0;
+            border-radius: 2px;
+            background: #0A0E11;
+        }
+        
+        .volume-field::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 10px;
+            background: #8E002C;
+        }
+        
+        .volume-field::-moz-range-thumb {
+            appearance: none;
+            height: 20px;
+            width: 10px;
+            background: #8E002C;
+        }
+        
+        .volume-field::-ms-thumb  {
+            appearance: none;
+            height: 20px;
+            width: 10px;
+            background: #8E002C;
+        }
+        
+        .volume-bar:hover .volume-field {
+            display: block;
+        }
+        
+        .progress-indicator {
+          flex:1;
+          display:flex;
+          justify-content:flex-end;
+          align-items:center;
+          position:relative;
+          height:20px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            z-index: 2;
+            transform: translateY(-50%);
+            width: 100%;
+            appearance: none;
+            margin: 0;
+            overflow: hidden;
+            background: none;
+        }
+        
+        .progress-bar::-webkit-slider-thumb {
+         appearance:none;
+         height:20px;
+         width:0px;
+         box-shadow: -300px 0 0 300px #ffffff30;
+        }
+        
+        .progress-bar::-moz-range-thumb {
+            appearance: none;
+            height: 20px;
+            width: 0;
+            box-shadow: -300px 0 0 300px #ffffff30;
+        }
+        
+        .progress-bar::-ms-thumb {
+            appearance: none;
+            height: 20px;
+            width: 0;
+            box-shadow: -300px 0 0 300px #ffffff30;
+        }
+        .canvasMusic {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .duration,
+        .current-time {
+          position:relative;
+          z-index:1;
+          text-shadow:0 0 2px #ffffff32;
+        }
+        
+        .duration {
+            margin-left:2px;
+            margin-right:5px;
+        }
+        
+        .duration::before {
+          content:'/';
+          display: inline-block;
+          margin-right:2px;
+        }
+        
+        
+      </style>
+    `
+    }
         render(){
             this.shadowRoot.innerHTML= `
-            <audio src="/audio/Anarchists_3.1.wav" style='display:none'></audio>
-            <button class='play-btn' type='button'>play</button>
-            <canvas class="canvasMusic" style="width:200px;height:20px"></canvas> 
-            <div class='progress-indicator'>
-                <span class="current-time">0:00</span>
-                <input type="range" max="100" value="0" class="progress-bar"></input>
-                <span class="duration">0:00</span>
-            </div>
-            <div class = "volume-bar">
-                <input type="range" min="0" max="2" step="0.01" value="${this.volume}" class="volume-field"></input>
-            </div>
+            ${this.style()}
+            <figure class="audio-player">
+                <figcaption class="audio-name">${this.title}</figcaption>
+                <audio style='display:none'></audio>
+                <button class='play-btn' type='button'>play</button>
+                
+                <div class='progress-indicator'>
+                    <span class="current-time">0:00</span>
+                    <input type="range" max="100" value="0" class="progress-bar"></input>
+                    <span class="duration">0:00</span>
+                    <canvas class="canvasMusic" style="width:200px;height:20px"></canvas> 
+                </div>
+                <div class = "volume-bar">
+                    <input type="range" min="0" max="2" step="0.01" value="${this.volume}" class="volume-field"></input>
+                </div>    
+            </figure>
             `
 
             this.audio = this.shadowRoot.querySelector('audio')
             this.canvas = this.shadowRoot.querySelector('.canvasMusic')
             this.playPauseBtn = this.shadowRoot.querySelector('.play-btn')
+            this.titleElement = this.shadowRoot.querySelector('.audio-name')
+            
             this.volumeBar = this.shadowRoot.querySelector('.volume-field')
 
             this.progressIndicator = this.shadowRoot.querySelector('.progress-indicator')
