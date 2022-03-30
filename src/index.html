@@ -15,33 +15,31 @@
     <title>Underground Society</title>
 </head>
 <body>
+    <nav class="navbar">      
+        <div class="openMenu"><i class="fa fa-bars"></i></div>
+        <div class="menu">
+            <ul class="nav-list">
+                <li class="list-item">Roadmap</li>
+                <li class="list-item">Factions</li>
+                <li class="list-item">About</li>
+                <!-- <li class="list-item" style="color:#EDEDED;">
+                    Join us
+                </li> -->
+                <li class="list-item">
+                    <div class="discord">
+                        <i class="fa-brands fa-discord whiteFont"></i>
+                    </div>
+                </li>
+                <li class="list-item"> 
+                    <div class="twitter">
+                        <i class="fa-brands fa-twitter whiteFont"></i>
+                    </div>
+                </li>
+                <div class="closeMenu"><i class="fa fa-times"></i></div>
+            </ul>
+        </div>
+    </nav>
     <section class="welcomnePage">
-        <nav class="navbar">
-            <audio-player src="/audio/Anarchists_3.1.wav" title="Anarchist-Song"></audio-player>
-            
-            <div class="openMenu"><i class="fa fa-bars"></i></div>
-            <div class="menu">
-                <ul class="nav-list">
-                    <li class="list-item">Roadmap</li>
-                    <li class="list-item">Factions</li>
-                    <li class="list-item">About</li>
-                    <!-- <li class="list-item" style="color:#EDEDED;">
-                        Join us
-                    </li> -->
-                    <li class="list-item">
-                        <div class="discord">
-                            <i class="fa-brands fa-discord whiteFont"></i>
-                        </div>
-                    </li>
-                    <li class="list-item"> 
-                        <div class="twitter">
-                            <i class="fa-brands fa-twitter whiteFont"></i>
-                        </div>
-                    </li>
-                    <div class="closeMenu"><i class="fa fa-times"></i></div>
-                </ul>
-            </div>
-        </nav>
         <div class="title">
             <div class="logo">
                 <div class="svgWrap">
@@ -57,6 +55,9 @@
             <div id="countdown"></div>
         </div>
     </section>
+    <div class= 'audioContainer'>
+        <audio-player src="/audio/Anarchists_3.1.wav" title="Anarchist-Song"></audio-player>
+    </div>
     <canvas class="webgl"></canvas>
  
 </body>
@@ -254,25 +255,28 @@
           display: flex;
           align-items: center;
           position: relative;
-          margin: 0 0 25px;
+          margin: 0 0 ;
+          bottom:0;
         }
         
         .audio-name {
-            position: absolute;
-            padding: 5px 10px;
-            border: 1px #EDEDED inset;
-            width: 100%;
-            left: 0;
-            z-index: 2;
-            text-transform: capitalize;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            font-weight: 400;
-            top: calc(100% + 2px);
+            // position: absolute;
+            // padding: 5px 10px;
+            // border: 1px #EDEDED inset;
+            // width: 100%;
+            // left: 0;
+            // z-index: 2;
+            // text-transform: capitalize;
+            // text-overflow: ellipsis;
+            // overflow: hidden;
+            // white-space: nowrap;
+            // font-weight: 400;
+            // top: calc(100% + 2px);
 
-            margin: 0;
-            border-radius: 3px;
+            // margin: 0;
+            // border-radius: 3px;
+            color: #EDEDED;
+            
         }
         
         .play-btn,
@@ -354,17 +358,7 @@
         }
         
         .progress-bar {
-            flex: 1;
-            position: absolute;
-            top: 50%;
-            left: 0;
-            z-index: 2;
-            transform: translateY(-50%);
-            width: 100%;
-            appearance: none;
-            margin: 0;
-            overflow: hidden;
-            background: none;
+          display:none
         }
         
         .progress-bar::-webkit-slider-thumb {
@@ -419,7 +413,7 @@
             this.shadowRoot.innerHTML= `
             ${this.style()}
             <figure class="audio-player">
-                <figcaption class="audio-name">${this.title}</figcaption>
+                
                 <audio style='display:none'></audio>
                 <button class='play-btn' type='button'>play</button>
                 
@@ -427,7 +421,9 @@
                     <span class="current-time">0:00</span>
                     <input type="range" max="100" value="0" class="progress-bar"></input>
                     <span class="duration">0:00</span>
+                    
                     <canvas class="canvasMusic" style="width:200px;height:20px"></canvas> 
+                    <figcaption class="audio-name">${this.title}</figcaption>
                 </div>
                 <div class = "volume-bar">
                     <input type="range" min="0" max="2" step="0.01" value="${this.volume}" class="volume-field"></input>

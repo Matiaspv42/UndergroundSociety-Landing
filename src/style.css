@@ -15,12 +15,14 @@ body
   
 }
 
-
+/* .welcomPage{
+  position: relative;
+} */
 
 .navbar{
     color: #EDEDED;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     font-size: 20px;
     margin: 5px 20px;
@@ -308,6 +310,15 @@ nav  .closeMenu{
   animation:RGBshift 2s infinite alternate;
 } */
 
+
+.audioContainer{
+  display:flex;
+  position: fixed;
+  justify-content: flex-end;
+  align-items: flex-end;
+  bottom: 0;
+  right: 0;
+}
 
 /* Mobile */
 
